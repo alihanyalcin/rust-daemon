@@ -1,5 +1,5 @@
 [package]
-name = "rs-daemon"
+name = "daemon"
 version = "0.1.0"
 authors = ["alihan.yalcin <alihan.yalcin@trendyol.com>"]
 edition = "2018"

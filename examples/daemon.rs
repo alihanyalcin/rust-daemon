@@ -1,13 +1,13 @@
-use rs_daemon;
+use daemon;
 
 fn main() {
     println!("hello from example");
 
-    rs_daemon::new();
+    daemon::new();
 
-    rs_daemon::execute();
+    daemon::execute();
 
-    rs_daemon::user();
+    daemon::user();
 
-    rs_daemon::home_dir();
+    daemon::home_dir();
 }
