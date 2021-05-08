@@ -23,7 +23,7 @@ pub trait Daemon {
 //    fn run();
 //}
 
-pub fn new<'a>(name: &'a str, description: &str, dependencies: Vec<String>) -> Result<impl Daemon> {
+pub fn new(name: &str, description: &str, dependencies: Vec<String>) -> Result<impl Daemon> {
     match std::env::consts::OS {
         "linux" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
         "macos" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
