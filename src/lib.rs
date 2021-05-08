@@ -1,14 +1,33 @@
+use anyhow::{bail, Result};
 use std::process::Command;
 use users::{get_current_uid, get_user_by_uid};
 
-pub type Error = Box<dyn std::error::Error + Send + Sync>;
-pub type Result<T> = std::result::Result<T, Error>;
+mod linux;
+mod linux_systemd;
 
-pub fn new() {
+pub trait Daemon {
+    fn get_template(&self) -> &str;
+    fn set_template(&mut self, new_config: &str);
+    // TODO: should take ards
+    // fn install() -> Result<&str>;
+    // fn remove() -> Result<&str>;
+    // fn start() -> Result<&str>;
+    // fn stop() -> Result<&str>;
+    // fn status() -> Result<&str>;
+    // fn run(e: impl Executable) -> Result<&str>;
+}
+
+//trait Executable {
+//    fn start();
+//    fn stop();
+//    fn run();
+//}
+
+pub fn new<'a>(name: &'a str, description: &str, dependencies: Vec<String>) -> Result<impl Daemon> {
     match std::env::consts::OS {
-        "linux" => println!("linux"),
-        "macos" => println!("macos"),
-        _ => println!("not supported"),
+        "linux" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
+        "macos" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
+        _ => bail!("operating system is not supported"),
     }
 }
 

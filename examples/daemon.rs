@@ -1,13 +1,24 @@
-use daemon;
+use daemon::Daemon;
 
 fn main() {
-    println!("hello from example");
+    let mut daemon = match daemon::new(
+        "name",
+        "description",
+        vec!["d1".to_string(), "d2".to_string()],
+    ) {
+        Ok(daemon) => daemon,
+        Err(err) => panic!("{}", err),
+    };
 
-    daemon::new();
+    println!("{}", daemon.get_template());
 
-    daemon::execute();
+    daemon.set_template("new_config");
 
-    daemon::user();
+    println!("updated: \n{}", daemon.get_template());
 
-    daemon::home_dir();
+    // daemon::execute();
+
+    // daemon::user();
+
+    // daemon::home_dir();
 }
