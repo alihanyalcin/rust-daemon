@@ -45,6 +45,11 @@ pub fn check_privileges() -> Result<()> {
     }
 }
 
+//pub fn executable_path() -> Result<String> {
+//    let exe = std::env::current_exe()?;
+//    Ok(exe.as_os_str().into_string())
+//}
+
 pub fn execute() {
     //let output = Command::new("ls")
     //.arg("-c")

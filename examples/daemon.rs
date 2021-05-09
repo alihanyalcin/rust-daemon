@@ -16,6 +16,11 @@ fn main() {
 
     println!("updated: \n{}", daemon.get_template());
 
+    match daemon::check_privileges() {
+        Ok(()) => println!("root"),
+        Err(err) => println!("{}", err),
+    }
+
     // daemon::execute();
 
     // daemon::user();
