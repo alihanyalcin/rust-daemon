@@ -31,6 +31,20 @@ pub fn new(name: &str, description: &str, dependencies: Vec<String>) -> Result<i
     }
 }
 
+// TODO: pub(crate)
+pub fn check_privileges() -> Result<()> {
+    let output = Command::new("id").arg("-g").output()?;
+
+    if !output.status.success() {
+        bail!("unsupported system")
+    }
+
+    match String::from_utf8(output.stdout)?.trim().parse::<u32>()? {
+        0 => Ok(()),
+        _ => bail!("you must have root privileges"),
+    }
+}
+
 pub fn execute() {
     //let output = Command::new("ls")
     //.arg("-c")
