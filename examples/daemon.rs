@@ -17,7 +17,12 @@ fn main() {
     println!("updated: \n{}", daemon.get_template());
 
     match daemon::check_privileges() {
-        Ok(()) => println!("root"),
+        Ok(_) => println!("root"),
+        Err(err) => println!("{}", err),
+    }
+
+    match daemon::executable_path() {
+        Ok(path) => println!("path: {}", path),
         Err(err) => println!("{}", err),
     }
 

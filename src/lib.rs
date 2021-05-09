@@ -1,4 +1,5 @@
 use anyhow::{bail, Result};
+use std::env::{consts::OS, current_exe};
 use std::process::Command;
 use users::{get_current_uid, get_user_by_uid};
 
@@ -24,7 +25,7 @@ pub trait Daemon {
 //}
 
 pub fn new(name: &str, description: &str, dependencies: Vec<String>) -> Result<impl Daemon> {
-    match std::env::consts::OS {
+    match OS {
         "linux" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
         "macos" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
         _ => bail!("operating system is not supported"),
@@ -45,10 +46,13 @@ pub fn check_privileges() -> Result<()> {
     }
 }
 
-//pub fn executable_path() -> Result<String> {
-//    let exe = std::env::current_exe()?;
-//    Ok(exe.as_os_str().into_string())
-//}
+// TODO: pub(crate)
+pub fn executable_path() -> Result<String> {
+    match current_exe()?.into_os_string().into_string() {
+        Ok(exe) => Ok(exe),
+        Err(_) => bail!("cannot get current running executable"),
+    }
+}
 
 pub fn execute() {
     //let output = Command::new("ls")
