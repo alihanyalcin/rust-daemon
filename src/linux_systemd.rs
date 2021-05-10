@@ -15,14 +15,15 @@ pub(crate) struct SystemD {
 
 #[allow(dead_code)]
 impl SystemD {
-    pub fn new(name: String, description: String, dependencies: Vec<&str>) -> Self {
+    pub fn new<S, I>(name: S, description: S, dependencies: I) -> Self
+    where
+        S: Into<String>,
+        I: IntoIterator<Item = S>,
+    {
         Self {
-            name,
-            description,
-            dependencies: dependencies
-                .iter()
-                .map(|&s| s.to_string())
-                .collect::<Vec<String>>(),
+            name: name.into(),
+            description: description.into(),
+            dependencies: dependencies.into_iter().map(Into::into).collect(),
             systemd_config: r#"
 [Unit]
 Description={Description}
@@ -38,7 +39,7 @@ Restart=on-failure
 [Install]
 WantedBy=multi-user.target
             "#
-            .to_string(),
+            .into(),
         }
     }
 
@@ -93,6 +94,7 @@ impl Daemon for SystemD {
 
         file.write(template.as_bytes())?;
 
+        // TODO: success check ??
         Command::new("systemctl").arg("daemon-reload").status()?;
 
         Command::new("systemctl")

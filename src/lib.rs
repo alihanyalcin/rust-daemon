@@ -6,6 +6,7 @@ use users::{get_current_uid, get_user_by_uid};
 mod linux;
 mod linux_systemd;
 
+// TODO: generics ?? type ??
 pub trait Daemon {
     fn get_template(&self) -> &str;
     fn set_template(&mut self, new_config: &str);
@@ -23,10 +24,14 @@ pub trait Daemon {
 //    fn run();
 //}
 
-pub fn new(name: &str, description: &str, dependencies: Vec<&str>) -> Result<impl Daemon> {
+pub fn new<S, I>(name: S, description: S, dependencies: I) -> Result<impl Daemon>
+where
+    S: Into<String>,
+    I: IntoIterator<Item = S>,
+{
     match OS {
-        "linux" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
-        "macos" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
+        "linux" => linux::new_daemon(name, description, dependencies),
+        "macos" => linux::new_daemon(name, description, dependencies),
         _ => bail!("operating system is not supported"),
     }
 }
