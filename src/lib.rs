@@ -9,8 +9,7 @@ mod linux_systemd;
 pub trait Daemon {
     fn get_template(&self) -> &str;
     fn set_template(&mut self, new_config: &str);
-    // TODO: should take ards
-    // fn install() -> Result<&str>;
+    fn install(&self, args: Vec<&str>) -> Result<()>;
     // fn remove() -> Result<&str>;
     // fn start() -> Result<&str>;
     // fn stop() -> Result<&str>;
@@ -24,7 +23,7 @@ pub trait Daemon {
 //    fn run();
 //}
 
-pub fn new(name: &str, description: &str, dependencies: Vec<String>) -> Result<impl Daemon> {
+pub fn new(name: &str, description: &str, dependencies: Vec<&str>) -> Result<impl Daemon> {
     match OS {
         "linux" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
         "macos" => linux::new_daemon(name.to_string(), description.to_string(), dependencies),
@@ -32,8 +31,7 @@ pub fn new(name: &str, description: &str, dependencies: Vec<String>) -> Result<i
     }
 }
 
-// TODO: pub(crate)
-pub fn check_privileges() -> Result<()> {
+pub(crate) fn check_privileges() -> Result<()> {
     let output = Command::new("id").arg("-g").output()?;
 
     if !output.status.success() {
@@ -46,8 +44,7 @@ pub fn check_privileges() -> Result<()> {
     }
 }
 
-// TODO: pub(crate)
-pub fn executable_path() -> Result<String> {
+pub(crate) fn executable_path() -> Result<String> {
     match current_exe()?.into_os_string().into_string() {
         Ok(exe) => Ok(exe),
         Err(_) => bail!("cannot get current running executable"),

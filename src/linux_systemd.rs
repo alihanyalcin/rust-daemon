@@ -1,6 +1,8 @@
 use crate::Daemon;
 use anyhow::{bail, Result};
 use regex::Regex;
+use std::fs::File;
+use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
@@ -13,11 +15,14 @@ pub(crate) struct SystemD {
 
 #[allow(dead_code)]
 impl SystemD {
-    pub fn new(name: String, description: String, dependencies: Vec<String>) -> Self {
+    pub fn new(name: String, description: String, dependencies: Vec<&str>) -> Self {
         Self {
             name,
             description,
-            dependencies,
+            dependencies: dependencies
+                .iter()
+                .map(|&s| s.to_string())
+                .collect::<Vec<String>>(),
             systemd_config: r#"
 [Unit]
 Description={Description}
@@ -27,7 +32,7 @@ After={Dependencies}
 [Service]
 PIDFile=/var/run/{Name}.pid
 ExecStartPre=/bin/rm -f /var/run/{Name}.pid
-ExecStart={{.Path}} {Args}
+ExecStart={Path} {Args}
 Restart=on-failure
 
 [Install]
@@ -67,5 +72,34 @@ impl Daemon for SystemD {
 
     fn set_template(&mut self, new_config: &str) {
         self.systemd_config = new_config.to_string();
+    }
+
+    fn install(&self, args: Vec<&str>) -> Result<()> {
+        crate::check_privileges()?;
+
+        if self.is_installed() {
+            bail!("service has already been installed")
+        }
+
+        let mut file = File::create(&self.service_path())?;
+
+        let template = &self
+            .systemd_config
+            .replace("{Name}", &self.name)
+            .replace("{Description}", &self.description)
+            .replace("{Dependencies}", &self.dependencies.join(" "))
+            .replace("{Path}", &crate::executable_path()?)
+            .replace("{Args}", &args.join(" "));
+
+        file.write(template.as_bytes())?;
+
+        Command::new("systemctl").arg("daemon-reload").status()?;
+
+        Command::new("systemctl")
+            .arg("enable")
+            .arg(&self.name)
+            .status()?;
+
+        Ok(())
     }
 }
