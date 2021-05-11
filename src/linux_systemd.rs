@@ -23,8 +23,7 @@ impl SystemD {
             name: name.into(),
             description: description.into(),
             dependencies: dependencies.into_iter().map(Into::into).collect(),
-            systemd_config: r#"
-[Unit]
+            systemd_config: r#"[Unit]
 Description={Description}
 Requires={Dependencies}
 After={Dependencies}
@@ -36,9 +35,8 @@ ExecStart={Path} {Args}
 Restart=on-failure
 
 [Install]
-WantedBy=multi-user.target
-            "#
-            .into(),
+WantedBy=multi-user.target"#
+                .into(),
         }
     }
 
