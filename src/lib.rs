@@ -14,7 +14,7 @@ pub trait Daemon {
     fn remove(&self) -> Result<()>;
     // fn start() -> Result<&str>;
     // fn stop() -> Result<&str>;
-    // fn status() -> Result<&str>;
+    fn status(&self) -> Result<bool>;
     // fn run(e: impl Executable) -> Result<&str>;
 }
 

@@ -110,4 +110,14 @@ impl Daemon for SystemD {
 
         Ok(())
     }
+
+    fn status(&self) -> Result<bool> {
+        crate::check_privileges()?;
+
+        if !self.is_installed() {
+            bail!("service is not installed")
+        }
+
+        self.check_running()
+    }
 }

@@ -13,7 +13,15 @@ fn main() {
         Err(err) => println!("daemon install error: {}", err),
     }
 
-    match deamon.remove() {
+    match daemon.status() {
+        Ok(status) => match status {
+            true => println!("status active"),
+            false => println!("status not active"),
+        },
+        Err(err) => println!("status not active error: {}", err),
+    }
+
+    match daemon.remove() {
         Ok(()) => println!("removed"),
         Err(err) => println!("daemon remove error: {}", err),
     }
