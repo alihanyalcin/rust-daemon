@@ -1,10 +1,10 @@
 use anyhow::{bail, Result};
 use std::env::{consts::OS, current_exe};
-use std::process::Command;
 use users::{get_current_uid, get_user_by_uid};
 
 mod linux;
 mod linux_systemd;
+mod macros;
 
 // TODO: generics ?? type ??
 pub trait Daemon {
@@ -37,7 +37,7 @@ where
 }
 
 pub(crate) fn check_privileges() -> Result<()> {
-    let output = Command::new("id").arg("-g").output()?;
+    let output = command_output!("id", "-g")?;
 
     if !output.status.success() {
         bail!("unsupported system")
@@ -53,31 +53,6 @@ pub(crate) fn executable_path() -> Result<String> {
     match current_exe()?.into_os_string().into_string() {
         Ok(exe) => Ok(exe),
         Err(_) => bail!("cannot get current running executable"),
-    }
-}
-
-pub fn execute() {
-    //let output = Command::new("ls")
-    //.arg("-c")
-    //.output()
-    //.expect("failed to execute process");
-
-    //let hello = output.stdout;
-
-    //println!("{:?}", std::str::from_utf8(&hello));
-
-    //let mut list_dir = Command::new("ls");
-
-    // Execute `ls` in the current directory of the program.
-    //list_dir.status().expect("process failed to execute");
-
-    let output = Command::new("ls")
-        .arg("-l")
-        .output()
-        .expect("failed to execute process");
-
-    if output.status.success() {
-        println!("Command executed");
     }
 }
 

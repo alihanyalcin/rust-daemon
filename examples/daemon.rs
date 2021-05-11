@@ -6,11 +6,11 @@ fn main() {
         Err(err) => panic!("{}", err),
     };
 
-    println!("{}", daemon.get_template());
+    //println!("{}", daemon.get_template());
 
     match daemon.install(vec!["args1", "args2"]) {
         Ok(()) => println!("ok"),
-        Err(err) => println!("{}", err),
+        Err(err) => println!("daemon install {}", err),
     }
 
     //daemon.set_template("new_config");

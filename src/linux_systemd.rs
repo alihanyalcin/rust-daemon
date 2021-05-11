@@ -1,10 +1,9 @@
-use crate::Daemon;
+use crate::{command_output, command_status, Daemon};
 use anyhow::{bail, Result};
 use regex::Regex;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use std::process::Command;
 
 pub(crate) struct SystemD {
     pub name: String,
@@ -52,10 +51,7 @@ WantedBy=multi-user.target
     }
 
     fn check_running(&self) -> Result<bool> {
-        let output = Command::new("systemctl")
-            .arg("status")
-            .arg(format!("{}.service", &self.name))
-            .output()?;
+        let output = command_output!("systemctl", "status", format!("{}.service", &self.name))?;
 
         if !output.status.success() {
             bail!("service is stopped")
@@ -95,12 +91,9 @@ impl Daemon for SystemD {
         file.write(template.as_bytes())?;
 
         // TODO: success check ??
-        Command::new("systemctl").arg("daemon-reload").status()?;
+        command_status!("systemctl", "daemon-reload")?;
 
-        Command::new("systemctl")
-            .arg("enable")
-            .arg(&self.name)
-            .status()?;
+        command_status!("systemctl", "enable", &self.name)?;
 
         Ok(())
     }
