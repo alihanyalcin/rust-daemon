@@ -43,7 +43,7 @@ WantedBy=multi-user.target
     }
 
     fn service_path(&self) -> String {
-        format!("/etc/systemd/system/{}/.service", &self.name)
+        format!("/etc/systemd/system/{}.service", &self.name)
     }
 
     fn is_installed(&self) -> bool {
