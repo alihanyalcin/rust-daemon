@@ -1,7 +1,7 @@
 use crate::{command_output, command_status, Daemon};
 use anyhow::{bail, Result};
 use regex::Regex;
-use std::fs::File;
+use std::fs::{remove_file, File};
 use std::io::Write;
 use std::path::Path;
 
@@ -93,6 +93,20 @@ impl Daemon for SystemD {
         command_status!("systemctl", "daemon-reload")?;
 
         command_status!("systemctl", "enable", &self.name)?;
+
+        Ok(())
+    }
+
+    fn remove(&self) -> Result<()> {
+        crate::check_privileges()?;
+
+        if !self.is_installed() {
+            bail!("service is not installed")
+        }
+
+        command_status!("systemctl", "disable", &self.name)?;
+
+        remove_file(&self.service_path())?;
 
         Ok(())
     }

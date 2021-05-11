@@ -11,7 +11,7 @@ pub trait Daemon {
     fn get_template(&self) -> &str;
     fn set_template(&mut self, new_config: &str);
     fn install(&self, args: Vec<&str>) -> Result<()>;
-    // fn remove() -> Result<&str>;
+    fn remove(&self) -> Result<()>;
     // fn start() -> Result<&str>;
     // fn stop() -> Result<&str>;
     // fn status() -> Result<&str>;

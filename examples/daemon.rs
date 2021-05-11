@@ -9,8 +9,13 @@ fn main() {
     //println!("{}", daemon.get_template());
 
     match daemon.install(vec!["args1", "args2"]) {
-        Ok(()) => println!("ok"),
-        Err(err) => println!("daemon install {}", err),
+        Ok(()) => println!("installed"),
+        Err(err) => println!("daemon install error: {}", err),
+    }
+
+    match deamon.remove() {
+        Ok(()) => println!("removed"),
+        Err(err) => println!("daemon remove error: {}", err),
     }
 
     //daemon.set_template("new_config");
