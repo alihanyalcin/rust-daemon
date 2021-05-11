@@ -35,8 +35,9 @@ ExecStart={Path} {Args}
 Restart=on-failure
 
 [Install]
-WantedBy=multi-user.target"#
-                .into(),
+WantedBy=multi-user.target
+"#
+            .into(),
         }
     }
 
