@@ -53,7 +53,9 @@ WantedBy=multi-user.target
         let output = command_output!("systemctl", "status", format!("{}.service", &self.name))?;
 
         if !output.status.success() {
-            bail!("service is stopped")
+            // TODO: if program is not running, status is 3.
+            // https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
+            // bail!("service is stopped")
         }
 
         let is_active = Regex::new("Active: active")?;
