@@ -111,6 +111,38 @@ impl Daemon for SystemD {
         Ok(())
     }
 
+    fn start(&self) -> Result<()> {
+        crate::check_privileges()?;
+
+        if !self.is_installed() {
+            bail!("service is not installed")
+        }
+
+        if self.check_running()? {
+            bail!("service is already running")
+        }
+
+        command_status!("systemctl", "start", &self.name)?;
+
+        Ok(())
+    }
+
+    fn stop(&self) -> Result<()> {
+        crate::check_privileges()?;
+
+        if !self.is_installed() {
+            bail!("service is not installed")
+        }
+
+        if !self.check_running()? {
+            bail!("service has already been stopped")
+        }
+
+        command_status!("systemctl", "stop", &self.name)?;
+
+        Ok(())
+    }
+
     fn status(&self) -> Result<bool> {
         crate::check_privileges()?;
 

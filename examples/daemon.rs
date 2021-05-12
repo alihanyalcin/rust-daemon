@@ -10,7 +10,12 @@ fn main() {
 
     match daemon.install(vec!["args1", "args2"]) {
         Ok(()) => println!("installed"),
-        Err(err) => println!("daemon install error: {}", err),
+        Err(err) => println!("install error: {}", err),
+    }
+
+    match daemon.start() {
+        Ok(()) => println!("started"),
+        Err(err) => println!("start error: {}", err),
     }
 
     match daemon.status() {
@@ -18,12 +23,17 @@ fn main() {
             true => println!("status active"),
             false => println!("status not active"),
         },
-        Err(err) => println!("status not active error: {}", err),
+        Err(err) => println!("status error: {}", err),
+    }
+
+    match daemon.stop() {
+        Ok(()) => println!("stopped"),
+        Err(err) => println!("stop error: {}", err),
     }
 
     match daemon.remove() {
         Ok(()) => println!("removed"),
-        Err(err) => println!("daemon remove error: {}", err),
+        Err(err) => println!("remove error: {}", err),
     }
 
     //daemon.set_template("new_config");
