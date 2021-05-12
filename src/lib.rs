@@ -1,4 +1,5 @@
 use anyhow::{bail, Result};
+use async_trait::async_trait;
 use std::env::{consts::OS, current_exe};
 use users::{get_current_uid, get_user_by_uid};
 
@@ -6,15 +7,16 @@ mod linux;
 mod linux_systemd;
 mod macros;
 
-// TODO: generics ?? type ??
+// TODO: generics ?? type ?? async??
+#[async_trait]
 pub trait Daemon {
     fn get_template(&self) -> &str;
     fn set_template(&mut self, new_config: &str);
-    fn install(&self, args: Vec<&str>) -> Result<()>;
-    fn remove(&self) -> Result<()>;
-    fn start(&self) -> Result<()>;
-    fn stop(&self) -> Result<()>;
-    fn status(&self) -> Result<bool>;
+    async fn install(&self, args: Vec<&str>) -> Result<()>;
+    async fn remove(&self) -> Result<()>;
+    async fn start(&self) -> Result<()>;
+    async fn stop(&self) -> Result<()>;
+    async fn status(&self) -> Result<bool>;
     // fn run(e: impl Executable) -> Result<&str>;
 }
 

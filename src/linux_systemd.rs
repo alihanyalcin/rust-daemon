@@ -1,5 +1,6 @@
 use crate::{command_output, command_status, Daemon};
 use anyhow::{bail, Result};
+use async_trait::async_trait;
 use log::trace;
 use regex::Regex;
 use std::fs::{remove_file, File};
@@ -70,6 +71,7 @@ WantedBy=multi-user.target
     }
 }
 
+#[async_trait]
 impl Daemon for SystemD {
     fn get_template(&self) -> &str {
         &self.systemd_config
@@ -79,7 +81,7 @@ impl Daemon for SystemD {
         self.systemd_config = new_config.to_string();
     }
 
-    fn install(&self, args: Vec<&str>) -> Result<()> {
+    async fn install(&self, args: Vec<&str>) -> Result<()> {
         trace!("service is installing");
 
         crate::check_privileges()?;
@@ -108,7 +110,7 @@ impl Daemon for SystemD {
         Ok(())
     }
 
-    fn remove(&self) -> Result<()> {
+    async fn remove(&self) -> Result<()> {
         trace!("service is removing");
 
         crate::check_privileges()?;
@@ -124,7 +126,7 @@ impl Daemon for SystemD {
         Ok(())
     }
 
-    fn start(&self) -> Result<()> {
+    async fn start(&self) -> Result<()> {
         trace!("service is starting");
 
         crate::check_privileges()?;
@@ -142,7 +144,7 @@ impl Daemon for SystemD {
         Ok(())
     }
 
-    fn stop(&self) -> Result<()> {
+    async fn stop(&self) -> Result<()> {
         trace!("service is stopping");
 
         crate::check_privileges()?;
@@ -160,7 +162,7 @@ impl Daemon for SystemD {
         Ok(())
     }
 
-    fn status(&self) -> Result<bool> {
+    async fn status(&self) -> Result<bool> {
         crate::check_privileges()?;
 
         if !self.is_installed() {
