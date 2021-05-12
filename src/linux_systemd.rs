@@ -1,5 +1,6 @@
 use crate::{command_output, command_status, Daemon};
 use anyhow::{bail, Result};
+use log::trace;
 use regex::Regex;
 use std::fs::{remove_file, File};
 use std::io::Write;
@@ -52,10 +53,16 @@ WantedBy=multi-user.target
     fn check_running(&self) -> Result<bool> {
         let output = command_output!("systemctl", "status", format!("{}.service", &self.name))?;
 
-        if !output.status.success() {
-            // TODO: if program is not running, status is 3.
-            // https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
-            // bail!("service is stopped")
+        // https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
+        let code = output.status.code();
+        if Some(0) != code {
+            if Some(3) == code {
+                trace!("program is not running");
+                return Ok(false);
+            }
+            trace!("program is dead or status is unknown");
+
+            bail!("service is stopped")
         }
 
         let is_active = Regex::new("Active: active")?;
@@ -73,6 +80,8 @@ impl Daemon for SystemD {
     }
 
     fn install(&self, args: Vec<&str>) -> Result<()> {
+        trace!("service is installing");
+
         crate::check_privileges()?;
 
         if self.is_installed() {
@@ -100,6 +109,8 @@ impl Daemon for SystemD {
     }
 
     fn remove(&self) -> Result<()> {
+        trace!("service is removing");
+
         crate::check_privileges()?;
 
         if !self.is_installed() {
@@ -114,6 +125,8 @@ impl Daemon for SystemD {
     }
 
     fn start(&self) -> Result<()> {
+        trace!("service is starting");
+
         crate::check_privileges()?;
 
         if !self.is_installed() {
@@ -130,6 +143,8 @@ impl Daemon for SystemD {
     }
 
     fn stop(&self) -> Result<()> {
+        trace!("service is stopping");
+
         crate::check_privileges()?;
 
         if !self.is_installed() {
