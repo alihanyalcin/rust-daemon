@@ -1,5 +1,4 @@
 use anyhow::Result;
-use daemon::Daemon;
 use env_logger;
 use log::{error, info, warn};
 

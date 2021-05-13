@@ -5,9 +5,9 @@ use users::{get_current_uid, get_user_by_uid};
 
 mod linux;
 mod linux_systemd;
+mod linux_systemv;
 mod macros;
 
-// TODO: generics ?? type ?? async??
 #[async_trait]
 pub trait Daemon {
     fn get_template(&self) -> &str;
@@ -31,14 +31,14 @@ pub trait Daemon {
 //    fn run();
 //}
 
-pub fn new<S, I>(name: S, description: S, dependencies: I) -> Result<impl Daemon>
+pub fn new<S, I>(name: S, description: S, dependencies: I) -> Result<Box<dyn Daemon>>
 where
     S: Into<String>,
     I: IntoIterator<Item = S>,
 {
     match OS {
-        "linux" => linux::new_daemon(name, description, dependencies),
-        "macos" => linux::new_daemon(name, description, dependencies),
+        "linux" => Ok(linux::new_daemon(name, description, dependencies)),
+        "macos" => Ok(linux::new_daemon(name, description, dependencies)),
         _ => bail!("operating system is not supported"),
     }
 }

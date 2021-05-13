@@ -14,7 +14,6 @@ pub(crate) struct SystemD {
     systemd_config: String,
 }
 
-#[allow(dead_code)]
 impl SystemD {
     pub fn new<S, I>(name: S, description: S, dependencies: I) -> Self
     where
@@ -102,7 +101,6 @@ impl Daemon for SystemD {
 
         file.write_all(template.as_bytes()).await?;
 
-        // TODO: success check ??
         command_status!("systemctl", "daemon-reload")?;
 
         command_status!("systemctl", "enable", &self.name)?;
