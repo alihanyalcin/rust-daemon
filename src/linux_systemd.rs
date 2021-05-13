@@ -51,7 +51,7 @@ WantedBy=multi-user.target
         Path::new(&self.service_path()).exists()
     }
 
-    async fn check_running(&self) -> Result<bool> {
+    async fn is_running(&self) -> Result<bool> {
         let output = command_output!("systemctl", "status", format!("{}.service", &self.name))?;
 
         // https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
@@ -135,7 +135,7 @@ impl Daemon for SystemD {
             bail!("service is not installed")
         }
 
-        if self.check_running().await? {
+        if self.is_running().await? {
             bail!("service is already running")
         }
 
@@ -153,7 +153,7 @@ impl Daemon for SystemD {
             bail!("service is not installed")
         }
 
-        if !self.check_running().await? {
+        if !self.is_running().await? {
             bail!("service has already been stopped")
         }
 
@@ -169,6 +169,6 @@ impl Daemon for SystemD {
             bail!("service is not installed")
         }
 
-        Ok(self.check_running().await?)
+        Ok(self.is_running().await?)
     }
 }
