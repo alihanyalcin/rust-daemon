@@ -2,7 +2,7 @@
 macro_rules! command {
     ($program:expr, $arg:expr $(, $args:expr)* $(,)*) => {
         {
-            std::process::Command::new($program).arg(&$arg)$(.arg(&$args))*
+            tokio::process::Command::new($program).arg(&$arg)$(.arg(&$args))*
         }
     };
 }
@@ -11,7 +11,7 @@ macro_rules! command {
 macro_rules! command_output {
     ($program:expr, $arg:expr $(, $args:expr)* $(,)*) => {
         {
-            crate::command!($program, $arg $(, $args)*).output()
+            crate::command!($program, $arg $(, $args)*).output().await
         }
     };
 }
@@ -20,7 +20,7 @@ macro_rules! command_output {
 macro_rules! command_status {
     ($program:expr, $arg:expr $(, $args:expr)* $(,)*) => {
         {
-            crate::command!($program, $arg $(, $args)*).status()
+            crate::command!($program, $arg $(, $args)*).status().await
         }
     };
 }

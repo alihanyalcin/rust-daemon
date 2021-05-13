@@ -3,9 +3,9 @@ use anyhow::{bail, Result};
 use async_trait::async_trait;
 use log::trace;
 use regex::Regex;
-use std::fs::{remove_file, File};
-use std::io::Write;
 use std::path::Path;
+use tokio::fs::{remove_file, File};
+use tokio::io::AsyncWriteExt;
 
 pub(crate) struct SystemD {
     pub name: String,
@@ -51,7 +51,7 @@ WantedBy=multi-user.target
         Path::new(&self.service_path()).exists()
     }
 
-    fn check_running(&self) -> Result<bool> {
+    async fn check_running(&self) -> Result<bool> {
         let output = command_output!("systemctl", "status", format!("{}.service", &self.name))?;
 
         // https://www.freedesktop.org/software/systemd/man/systemctl.html#Exit%20status
@@ -84,13 +84,11 @@ impl Daemon for SystemD {
     async fn install(&self, args: Vec<&str>) -> Result<()> {
         trace!("service is installing");
 
-        crate::check_privileges()?;
+        crate::check_privileges().await?;
 
         if self.is_installed() {
             bail!("service has already been installed")
         }
-
-        let mut file = File::create(&self.service_path())?;
 
         let template = &self
             .systemd_config
@@ -100,7 +98,9 @@ impl Daemon for SystemD {
             .replace("{Path}", &crate::executable_path()?)
             .replace("{Args}", &args.join(" "));
 
-        file.write(template.as_bytes())?;
+        let mut file = File::create(&self.service_path()).await?;
+
+        file.write_all(template.as_bytes()).await?;
 
         // TODO: success check ??
         command_status!("systemctl", "daemon-reload")?;
@@ -113,7 +113,7 @@ impl Daemon for SystemD {
     async fn remove(&self) -> Result<()> {
         trace!("service is removing");
 
-        crate::check_privileges()?;
+        crate::check_privileges().await?;
 
         if !self.is_installed() {
             bail!("service is not installed")
@@ -121,7 +121,7 @@ impl Daemon for SystemD {
 
         command_status!("systemctl", "disable", &self.name)?;
 
-        remove_file(&self.service_path())?;
+        remove_file(&self.service_path()).await?;
 
         Ok(())
     }
@@ -129,13 +129,13 @@ impl Daemon for SystemD {
     async fn start(&self) -> Result<()> {
         trace!("service is starting");
 
-        crate::check_privileges()?;
+        crate::check_privileges().await?;
 
         if !self.is_installed() {
             bail!("service is not installed")
         }
 
-        if self.check_running()? {
+        if self.check_running().await? {
             bail!("service is already running")
         }
 
@@ -147,13 +147,13 @@ impl Daemon for SystemD {
     async fn stop(&self) -> Result<()> {
         trace!("service is stopping");
 
-        crate::check_privileges()?;
+        crate::check_privileges().await?;
 
         if !self.is_installed() {
             bail!("service is not installed")
         }
 
-        if !self.check_running()? {
+        if !self.check_running().await? {
             bail!("service has already been stopped")
         }
 
@@ -163,12 +163,12 @@ impl Daemon for SystemD {
     }
 
     async fn status(&self) -> Result<bool> {
-        crate::check_privileges()?;
+        crate::check_privileges().await?;
 
         if !self.is_installed() {
             bail!("service is not installed")
         }
 
-        self.check_running()
+        Ok(self.check_running().await?)
     }
 }

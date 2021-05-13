@@ -20,6 +20,11 @@ pub trait Daemon {
     // fn run(e: impl Executable) -> Result<&str>;
 }
 
+//pub enum Status {
+//ACTIVE,
+//INACTIVE,
+//}
+
 //trait Executable {
 //    fn start();
 //    fn stop();
@@ -38,7 +43,7 @@ where
     }
 }
 
-pub(crate) fn check_privileges() -> Result<()> {
+pub(crate) async fn check_privileges() -> Result<()> {
     let output = command_output!("id", "-g")?;
 
     if !output.status.success() {
