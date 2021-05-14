@@ -3,8 +3,7 @@ use anyhow::{bail, Result};
 use async_trait::async_trait;
 use log::trace;
 use regex::Regex;
-use std::path::Path;
-use tokio::fs::{remove_file, File};
+use tokio::fs::{metadata, remove_file, File};
 use tokio::io::AsyncWriteExt;
 
 pub(crate) struct SystemD {
@@ -46,8 +45,8 @@ WantedBy=multi-user.target
         format!("/etc/systemd/system/{}.service", &self.name)
     }
 
-    fn is_installed(&self) -> bool {
-        Path::new(&self.service_path()).exists()
+    async fn is_installed(&self) -> bool {
+        metadata(&self.service_path()).await.is_ok()
     }
 
     async fn is_running(&self) -> Result<bool> {
@@ -85,7 +84,7 @@ impl Daemon for SystemD {
 
         crate::check_privileges().await?;
 
-        if self.is_installed() {
+        if self.is_installed().await {
             bail!("service has already been installed")
         }
 
@@ -113,7 +112,7 @@ impl Daemon for SystemD {
 
         crate::check_privileges().await?;
 
-        if !self.is_installed() {
+        if !self.is_installed().await {
             bail!("service is not installed")
         }
 
@@ -129,7 +128,7 @@ impl Daemon for SystemD {
 
         crate::check_privileges().await?;
 
-        if !self.is_installed() {
+        if !self.is_installed().await {
             bail!("service is not installed")
         }
 
@@ -147,7 +146,7 @@ impl Daemon for SystemD {
 
         crate::check_privileges().await?;
 
-        if !self.is_installed() {
+        if !self.is_installed().await {
             bail!("service is not installed")
         }
 
@@ -163,7 +162,7 @@ impl Daemon for SystemD {
     async fn status(&self) -> Result<bool> {
         crate::check_privileges().await?;
 
-        if !self.is_installed() {
+        if !self.is_installed().await {
             bail!("service is not installed")
         }
 
