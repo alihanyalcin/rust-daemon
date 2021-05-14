@@ -155,7 +155,10 @@ impl Daemon for SystemV {
     fn get_template(&self) -> &str {
         &self.systemv_config
     }
-    fn set_template(&mut self, new_config: &str) {}
+
+    fn set_template(&mut self, new_config: &str) {
+        self.systemv_config = new_config.to_string();
+    }
 
     async fn install(&self, args: Vec<&str>) -> Result<()> {
         bail!("not implemented")
