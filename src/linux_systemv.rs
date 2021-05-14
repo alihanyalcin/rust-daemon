@@ -150,7 +150,14 @@ exit $?
     async fn is_running(&self) -> Result<bool> {
         let output = command_output!("service", &self.name, "status")?;
 
-        if !output.status.success() {
+        let code = output.status.code();
+        if Some(0) != code {
+            if Some(3) == code {
+                trace!("program is not running");
+                return Ok(false);
+            }
+            trace!("program is dead or status is unknown");
+
             bail!("service is stopped")
         }
 
@@ -240,16 +247,39 @@ impl Daemon for SystemV {
             bail!("service is already running")
         }
 
-        command_status!("service", &self.name, "start")?;
+        let status = command_status!("service", &self.name, "start")?;
+        if !status.success() {
+            bail!("failed to start service")
+        }
 
         Ok(())
     }
 
     async fn stop(&self) -> Result<()> {
-        bail!("not implemented");
+        trace!("service is stopping");
+
+        crate::check_privileges().await?;
+
+        if !self.is_installed().await {
+            bail!("service is not installed")
+        }
+
+        if !self.is_running().await? {
+            bail!("service has already been stopped")
+        }
+
+        command_status!("service", &self.name, "stop")?;
+
+        Ok(())
     }
 
     async fn status(&self) -> Result<bool> {
-        bail!("not implemented");
+        crate::check_privileges().await?;
+
+        if !self.is_installed().await {
+            bail!("service is not installed")
+        }
+
+        Ok(self.is_running().await?)
     }
 }
