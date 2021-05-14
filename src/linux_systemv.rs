@@ -4,10 +4,9 @@ use async_trait::async_trait;
 use log::trace;
 use regex::Regex;
 use std::os::unix::fs::PermissionsExt;
-use tokio::fs::{symlink, File};
+use tokio::fs::{remove_file, symlink, File};
 use tokio::io::AsyncWriteExt;
 
-#[allow(dead_code)]
 pub(crate) struct SystemV {
     pub name: String,
     pub description: String,
@@ -15,7 +14,6 @@ pub(crate) struct SystemV {
     systemv_config: String,
 }
 
-#[allow(dead_code)]
 impl SystemV {
     pub fn new<S, I>(name: S, description: S, dependencies: I) -> Self
     where
@@ -161,7 +159,6 @@ exit $?
     }
 }
 
-#[allow(unused_variables)]
 #[async_trait]
 impl Daemon for SystemV {
     fn get_template(&self) -> &str {
@@ -209,7 +206,25 @@ impl Daemon for SystemV {
     }
 
     async fn remove(&self) -> Result<()> {
-        bail!("not implemented");
+        trace!("service is removing");
+
+        crate::check_privileges().await?;
+
+        if !self.is_installed().await {
+            bail!("service is not installed")
+        }
+
+        remove_file(&self.service_path()).await?;
+
+        for i in vec!["2", "3", "4", "5"] {
+            remove_file(format!("/etc/rc{}.d/S87{}", i, &self.name)).await?;
+        }
+
+        for i in vec!["0", "1", "6"] {
+            remove_file(format!("/etc/rc{}.d/K17{}", i, &self.name)).await?;
+        }
+
+        Ok(())
     }
 
     async fn start(&self) -> Result<()> {
