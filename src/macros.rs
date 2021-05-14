@@ -24,3 +24,10 @@ macro_rules! command_status {
         }
     };
 }
+
+#[macro_export]
+macro_rules! path_exist {
+    ($path:expr) => {{
+        tokio::fs::metadata($path).await.is_ok()
+    }};
+}

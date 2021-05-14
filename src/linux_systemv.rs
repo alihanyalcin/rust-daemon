@@ -1,10 +1,10 @@
-use crate::{command_output, Daemon};
+use crate::{command_output, path_exist, Daemon};
 use anyhow::{bail, Result};
 use async_trait::async_trait;
 use log::trace;
 use regex::Regex;
 use std::os::unix::fs::PermissionsExt;
-use tokio::fs::{metadata, symlink, File};
+use tokio::fs::{symlink, File};
 use tokio::io::AsyncWriteExt;
 
 #[allow(dead_code)]
@@ -146,7 +146,7 @@ exit $?
     }
 
     async fn is_installed(&self) -> bool {
-        metadata(&self.service_path()).await.is_ok()
+        path_exist!(&self.service_path())
     }
 
     async fn is_running(&self) -> Result<bool> {

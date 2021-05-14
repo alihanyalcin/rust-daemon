@@ -6,7 +6,7 @@ use log::{error, info, warn};
 pub async fn main() -> Result<()> {
     env_logger::init();
 
-    let daemon = match daemon::new("name", "description", vec!["d1", "d2"]) {
+    let daemon = match daemon::new("name", "description", vec!["d1", "d2"]).await {
         Ok(daemon) => daemon,
         Err(err) => panic!("{}", err),
     };

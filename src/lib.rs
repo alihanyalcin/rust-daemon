@@ -31,14 +31,14 @@ pub trait Daemon {
 //    fn run();
 //}
 
-pub fn new<S, I>(name: S, description: S, dependencies: I) -> Result<Box<dyn Daemon>>
+pub async fn new<S, I>(name: S, description: S, dependencies: I) -> Result<Box<dyn Daemon>>
 where
     S: Into<String>,
     I: IntoIterator<Item = S>,
 {
     match OS {
-        "linux" => Ok(linux::new_daemon(name, description, dependencies)),
-        "macos" => Ok(linux::new_daemon(name, description, dependencies)),
+        "linux" => Ok(linux::new_daemon(name, description, dependencies).await),
+        "macos" => Ok(linux::new_daemon(name, description, dependencies).await),
         _ => bail!("operating system is not supported"),
     }
 }
