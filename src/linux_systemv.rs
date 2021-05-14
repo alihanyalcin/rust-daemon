@@ -1,4 +1,4 @@
-use crate::{command_output, path_exist, Daemon};
+use crate::{command_output, command_status, path_exist, Daemon};
 use anyhow::{bail, Result};
 use async_trait::async_trait;
 use log::trace;
@@ -228,7 +228,21 @@ impl Daemon for SystemV {
     }
 
     async fn start(&self) -> Result<()> {
-        bail!("not implemented");
+        trace!("service is starting");
+
+        crate::check_privileges().await?;
+
+        if !self.is_installed().await {
+            bail!("service is not installed")
+        }
+
+        if self.is_running().await? {
+            bail!("service is already running")
+        }
+
+        command_status!("service", &self.name, "start")?;
+
+        Ok(())
     }
 
     async fn stop(&self) -> Result<()> {
