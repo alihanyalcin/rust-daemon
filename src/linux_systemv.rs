@@ -1,6 +1,11 @@
-use crate::Daemon;
+use crate::{command_output, Daemon};
 use anyhow::{bail, Result};
 use async_trait::async_trait;
+use log::trace;
+use regex::Regex;
+use std::os::unix::fs::PermissionsExt;
+use tokio::fs::{metadata, symlink, File};
+use tokio::io::AsyncWriteExt;
 
 #[allow(dead_code)]
 pub(crate) struct SystemV {
@@ -137,15 +142,22 @@ exit $?
     }
 
     fn service_path(&self) -> String {
-        panic!("not implemented")
+        format!("/etc/init.d/{}", &self.name)
     }
 
-    fn is_installed(&self) -> bool {
-        panic!("not implemented")
+    async fn is_installed(&self) -> bool {
+        metadata(&self.service_path()).await.is_ok()
     }
 
     async fn is_running(&self) -> Result<bool> {
-        bail!("not implemented")
+        let output = command_output!("service", &self.name, "status")?;
+
+        if !output.status.success() {
+            bail!("service is stopped")
+        }
+
+        let is_active = Regex::new(&self.name)?;
+        Ok(is_active.is_match(std::str::from_utf8(&output.stdout)?))
     }
 }
 
@@ -161,7 +173,39 @@ impl Daemon for SystemV {
     }
 
     async fn install(&self, args: Vec<&str>) -> Result<()> {
-        bail!("not implemented")
+        trace!("service is installing");
+
+        crate::check_privileges().await?;
+
+        if self.is_installed().await {
+            bail!("service has already been installed")
+        }
+
+        let template = &self
+            .systemv_config
+            .replace("{Name}", &self.name)
+            .replace("{Description}", &self.description)
+            .replace("{Path}", &crate::executable_path()?)
+            .replace("{Args}", &args.join(" "));
+
+        let service_path = &self.service_path();
+        let mut file = File::create(service_path).await?;
+
+        file.write_all(template.as_bytes()).await?;
+
+        let metadata = file.metadata().await?;
+        let mut permissions = metadata.permissions();
+        permissions.set_mode(0o755);
+
+        for i in vec!["2", "3", "4", "5"] {
+            symlink(service_path, format!("/etc/rc{}.d/S87{}", i, &self.name)).await?;
+        }
+
+        for i in vec!["0", "1", "6"] {
+            symlink(service_path, format!("/etc/rc{}.d/K17{}", i, &self.name)).await?;
+        }
+
+        Ok(())
     }
 
     async fn remove(&self) -> Result<()> {
