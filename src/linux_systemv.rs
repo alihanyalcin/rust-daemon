@@ -268,7 +268,10 @@ impl Daemon for SystemV {
             bail!("service has already been stopped")
         }
 
-        command_status!("service", &self.name, "stop")?;
+        let status = command_status!("service", &self.name, "stop")?;
+        if !status.success() {
+            bail!("failed to stop service")
+        }
 
         Ok(())
     }

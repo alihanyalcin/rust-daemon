@@ -136,7 +136,10 @@ impl Daemon for SystemD {
             bail!("service is already running")
         }
 
-        command_status!("systemctl", "start", &self.name)?;
+        let status = command_status!("systemctl", "start", &self.name)?;
+        if !status.success() {
+            bail!("failed to start service")
+        }
 
         Ok(())
     }
@@ -154,7 +157,10 @@ impl Daemon for SystemD {
             bail!("service has already been stopped")
         }
 
-        command_status!("systemctl", "stop", &self.name)?;
+        let status = command_status!("systemctl", "stop", &self.name)?;
+        if !status.success() {
+            bail!("failed to stop service")
+        }
 
         Ok(())
     }
