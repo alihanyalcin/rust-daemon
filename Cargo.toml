@@ -1,15 +1,14 @@
 [package]
 name = "daemon"
 version = "0.1.0"
-authors = ["alihan.yalcin <alihan.yalcin@trendyol.com>"]
+authors = ["Alihan Dogus Yalcin <alihandogusyalcin@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-users = "0.11.0"
-dirs = "3.0.2"
 anyhow = "1.0"
+thiserror = "1.0"
 regex = "1.5"
 log = "0.4.14"
 async-trait = "0.1.50"

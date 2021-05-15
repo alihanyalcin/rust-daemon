@@ -1,4 +1,4 @@
-use crate::{command_output, command_status, path_exist, Daemon};
+use crate::{command_output, command_status, path_exist, Daemon, DaemonError};
 use anyhow::{bail, Result};
 use async_trait::async_trait;
 use log::trace;
@@ -61,7 +61,7 @@ WantedBy=multi-user.target
             }
             trace!("program is dead or status is unknown");
 
-            bail!("service is stopped")
+            bail!(DaemonError::Stopped)
         }
 
         let is_active = Regex::new("Active: active")?;
@@ -85,7 +85,7 @@ impl Daemon for SystemD {
         crate::check_privileges().await?;
 
         if self.is_installed().await {
-            bail!("service has already been installed")
+            bail!(DaemonError::AlreadyInstalled)
         }
 
         let template = &self
@@ -113,7 +113,7 @@ impl Daemon for SystemD {
         crate::check_privileges().await?;
 
         if !self.is_installed().await {
-            bail!("service is not installed")
+            bail!(DaemonError::NotInstalled)
         }
 
         command_status!("systemctl", "disable", &self.name)?;
@@ -129,16 +129,16 @@ impl Daemon for SystemD {
         crate::check_privileges().await?;
 
         if !self.is_installed().await {
-            bail!("service is not installed")
+            bail!(DaemonError::NotInstalled)
         }
 
         if self.is_running().await? {
-            bail!("service is already running")
+            bail!(DaemonError::AlreadyRunning)
         }
 
         let status = command_status!("systemctl", "start", &self.name)?;
         if !status.success() {
-            bail!("failed to start service")
+            bail!(DaemonError::StartFailed)
         }
 
         Ok(())
@@ -150,16 +150,16 @@ impl Daemon for SystemD {
         crate::check_privileges().await?;
 
         if !self.is_installed().await {
-            bail!("service is not installed")
+            bail!(DaemonError::NotInstalled)
         }
 
         if !self.is_running().await? {
-            bail!("service has already been stopped")
+            bail!(DaemonError::AlreadyStopped)
         }
 
         let status = command_status!("systemctl", "stop", &self.name)?;
         if !status.success() {
-            bail!("failed to stop service")
+            bail!(DaemonError::StopFailed)
         }
 
         Ok(())
@@ -169,7 +169,7 @@ impl Daemon for SystemD {
         crate::check_privileges().await?;
 
         if !self.is_installed().await {
-            bail!("service is not installed")
+            bail!(DaemonError::NotInstalled)
         }
 
         Ok(self.is_running().await?)
