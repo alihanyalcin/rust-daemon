@@ -71,11 +71,11 @@ WantedBy=multi-user.target
 
 #[async_trait]
 impl Daemon for SystemD {
-    fn get_template(&self) -> &str {
+    fn get_config(&self) -> &str {
         &self.systemd_config
     }
 
-    fn set_template(&mut self, new_config: &str) {
+    fn set_config(&mut self, new_config: &str) {
         self.systemd_config = new_config.to_string();
     }
 

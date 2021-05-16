@@ -10,8 +10,8 @@ mod macros;
 
 #[async_trait]
 pub trait Daemon {
-    fn get_template(&self) -> &str;
-    fn set_template(&mut self, new_config: &str);
+    fn get_config(&self) -> &str;
+    fn set_config(&mut self, new_config: &str);
     async fn install(&self, args: Vec<&str>) -> Result<()>;
     async fn remove(&self) -> Result<()>;
     async fn start(&self) -> Result<()>;

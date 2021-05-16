@@ -168,11 +168,11 @@ exit $?
 
 #[async_trait]
 impl Daemon for SystemV {
-    fn get_template(&self) -> &str {
+    fn get_config(&self) -> &str {
         &self.systemv_config
     }
 
-    fn set_template(&mut self, new_config: &str) {
+    fn set_config(&mut self, new_config: &str) {
         self.systemv_config = new_config.to_string();
     }
 
