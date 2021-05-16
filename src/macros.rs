@@ -1,4 +1,22 @@
 #[macro_export]
+macro_rules! new {
+    ($name:expr, $description:expr) => {{
+        daemon::new($name, $description, vec![])
+    }};
+
+    ($name:expr, $description:expr, $dependency:expr $(, $dependencies:expr)* $(,)*) => {{
+        daemon::new($name, $description, vec![$dependency$(,$dependencies)*])
+    }};
+}
+
+#[macro_export]
+macro_rules! no_args {
+    () => {{
+        vec![]
+    }};
+}
+
+#[macro_export]
 macro_rules! command {
     ($program:expr, $arg:expr $(, $args:expr)* $(,)*) => {
         {

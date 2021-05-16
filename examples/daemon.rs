@@ -6,12 +6,12 @@ use log::{error, info, warn};
 pub async fn main() -> Result<()> {
     env_logger::init();
 
-    let daemon = match daemon::new("name", "description", vec!["d1", "d2"]).await {
+    let daemon = match daemon::new!("name", "description").await {
         Ok(daemon) => daemon,
         Err(err) => panic!("{}", err),
     };
 
-    match daemon.install(vec!["args1", "args2"]).await {
+    match daemon.install(daemon::no_args!()).await {
         Ok(()) => info!("installed"),
         Err(err) => error!("install error: {}", err),
     }
