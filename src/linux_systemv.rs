@@ -1,11 +1,13 @@
-use crate::{command_output, command_status, path_exist, Daemon, DaemonError};
+use crate::{command_output, command_status, path_exists, Daemon, DaemonError};
 use anyhow::{bail, Result};
 use async_trait::async_trait;
 use log::trace;
 use regex::Regex;
 use std::os::unix::fs::PermissionsExt;
-use tokio::fs::{remove_file, symlink, File};
-use tokio::io::AsyncWriteExt;
+use tokio::{
+    fs::{remove_file, symlink, File},
+    io::AsyncWriteExt,
+};
 
 pub(crate) struct SystemV {
     pub name: String,
@@ -144,7 +146,7 @@ exit $?
     }
 
     async fn is_installed(&self) -> bool {
-        path_exist!(&self.service_path())
+        path_exists(&self.service_path()).await
     }
 
     async fn is_running(&self) -> Result<bool> {

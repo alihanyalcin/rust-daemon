@@ -1,10 +1,12 @@
-use crate::{command_output, command_status, path_exist, Daemon, DaemonError};
+use crate::{command_output, command_status, path_exists, Daemon, DaemonError};
 use anyhow::{bail, Result};
 use async_trait::async_trait;
 use log::trace;
 use regex::Regex;
-use tokio::fs::{remove_file, File};
-use tokio::io::AsyncWriteExt;
+use tokio::{
+    fs::{remove_file, File},
+    io::AsyncWriteExt,
+};
 
 pub(crate) struct SystemD {
     pub name: String,
@@ -46,7 +48,7 @@ WantedBy=multi-user.target
     }
 
     async fn is_installed(&self) -> bool {
-        path_exist!(&self.service_path())
+        path_exists(&self.service_path()).await
     }
 
     async fn is_running(&self) -> Result<bool> {

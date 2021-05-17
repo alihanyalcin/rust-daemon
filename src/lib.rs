@@ -99,10 +99,6 @@ fn executable_path() -> Result<String> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+async fn path_exists(path: &str) -> bool {
+    tokio::fs::metadata(path).await.is_ok()
 }
