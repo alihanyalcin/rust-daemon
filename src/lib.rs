@@ -4,8 +4,6 @@ use std::env::{consts::OS, current_exe};
 use thiserror::Error;
 
 mod linux;
-mod linux_systemd;
-mod linux_systemv;
 mod macros;
 
 #[async_trait]
@@ -17,7 +15,6 @@ pub trait Daemon {
     async fn start(&self) -> Result<()>;
     async fn stop(&self) -> Result<()>;
     async fn status(&self) -> Result<bool>;
-    // fn run(e: impl Executable) -> Result<&str>;
 }
 
 #[derive(Error, Debug)]
@@ -55,17 +52,6 @@ enum DaemonError {
     #[error("failed to start service")]
     StartFailed,
 }
-
-//pub enum Status {
-//ACTIVE,
-//INACTIVE,
-//}
-
-//trait Executable {
-//    fn start();
-//    fn stop();
-//    fn run();
-//}
 
 pub async fn new<S, I>(name: S, description: S, dependencies: I) -> Result<Box<dyn Daemon>>
 where

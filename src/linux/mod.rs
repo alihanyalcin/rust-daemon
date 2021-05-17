@@ -1,4 +1,10 @@
-use crate::{linux_systemd::SystemD, linux_systemv::SystemV, path_exists, Daemon};
+use crate::{
+    linux::{systemd::SystemD, systemv::SystemV},
+    path_exists, Daemon,
+};
+
+mod systemd;
+mod systemv;
 
 pub(crate) async fn new_daemon<S, I>(name: S, description: S, dependencies: I) -> Box<dyn Daemon>
 where
