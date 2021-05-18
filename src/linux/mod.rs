@@ -1,7 +1,4 @@
-use crate::{
-    linux::{systemd::SystemD, systemv::SystemV},
-    path_exists, Daemon,
-};
+use crate::{path_exists, Daemon};
 
 mod systemd;
 mod systemv;
@@ -12,8 +9,8 @@ where
     I: IntoIterator<Item = S>,
 {
     if path_exists("/run/systemd/system").await {
-        Box::new(SystemD::new(name, description, dependencies))
+        Box::new(systemd::SystemD::new(name, description, dependencies))
     } else {
-        Box::new(SystemV::new(name, description, dependencies))
+        Box::new(systemv::SystemV::new(name, description, dependencies))
     }
 }
