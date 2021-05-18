@@ -16,4 +16,5 @@ tokio = { version = "1.5.0", features = ["fs", "io-util", "process"] }
 
 [dev-dependencies]
 env_logger = "0.8.3"
-tokio = { version = "1.5.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.5.0", features = ["macros", "rt-multi-thread", "net", "signal"] }
+clap = "2.33.3"
