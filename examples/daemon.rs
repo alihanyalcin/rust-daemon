@@ -12,13 +12,6 @@ pub async fn main() -> Result<()> {
 
     let config = App::new("Example Service")
         .arg(
-            Arg::with_name("command")
-                .help("daemon command")
-                .short("c")
-                .long("command")
-                .default_value(""),
-        )
-        .arg(
             Arg::with_name("addr")
                 .help("tcp listener address")
                 .short("a")
@@ -34,43 +27,25 @@ pub async fn main() -> Result<()> {
         Err(err) => panic!("{}", err),
     };
 
-    match config.value_of("command").unwrap() {
-        "install" => match daemon.install(daemon::no_args!()).await {
-            Ok(()) => {
-                info!("installed");
-                return Ok(());
-            }
-            Err(err) => bail!("install error: {}", err),
-        },
-        "start" => match daemon.start().await {
-            Ok(()) => {
-                info!("started");
-                return Ok(());
-            }
-            Err(err) => bail!("start error: {}", err),
-        },
-        "status" => match daemon.status().await {
-            Ok(status) => {
-                info!("active: {}", status);
-                return Ok(());
-            }
-            Err(err) => bail!("status error: {}", err),
-        },
-        "stop" => match daemon.stop().await {
-            Ok(()) => {
-                info!("stopped");
-                return Ok(());
-            }
-            Err(err) => bail!("stop error: {}", err),
-        },
-        "remove" => match daemon.remove().await {
-            Ok(()) => {
-                info!("removed");
-                return Ok(());
-            }
-            Err(err) => bail!("remove error: {}", err),
-        },
-        _ => {}
+    match daemon.install(daemon::no_args!()).await {
+        Ok(()) => {
+            info!("installed");
+        }
+        Err(err) => bail!("install error: {}", err),
+    };
+
+    match daemon.start().await {
+        Ok(()) => {
+            info!("started");
+        }
+        Err(err) => bail!("start error: {}", err),
+    };
+
+    match daemon.status().await {
+        Ok(status) => {
+            info!("active: {}", status);
+        }
+        Err(err) => bail!("status error: {}", err),
     }
 
     let listener = TcpListener::bind(&addr).await?;
@@ -83,7 +58,22 @@ pub async fn main() -> Result<()> {
             }
         }
         _ = ctrl_c() => {
-            info!("shutting down")
+            info!("shutting down");
+
+            match daemon.stop().await {
+                Ok(()) => {
+                    info!("stopped");
+                }
+                Err(err) => bail!("stop error: {}", err),
+            };
+
+
+            match daemon.remove().await {
+                Ok(()) => {
+                    info!("removed");
+                }
+                Err(err) => bail!("remove error: {}", err),
+            };
         }
     }
 
