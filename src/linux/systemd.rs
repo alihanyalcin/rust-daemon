@@ -102,9 +102,15 @@ impl Daemon for SystemD {
 
         file.write_all(template.as_bytes()).await?;
 
-        command_status!("systemctl", "daemon-reload")?;
+        let status = command_status!("systemctl", "daemon-reload")?;
+        if !status.success() {
+            bail!("daemon-reload failed")
+        }
 
-        command_status!("systemctl", "enable", &self.name)?;
+        let status = command_status!("systemctl", "enable", &self.name)?;
+        if !status.success() {
+            bail!("enable failed")
+        }
 
         Ok(())
     }
