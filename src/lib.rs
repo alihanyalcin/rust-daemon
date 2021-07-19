@@ -1,3 +1,7 @@
+//! # Daemon
+//!
+//! `daemon` is a async Rust version of Go [daemon](https://github.com/takama/daemon) package
+
 use anyhow::{bail, Result};
 use async_trait::async_trait;
 use std::env::{consts::OS, current_exe};
@@ -8,12 +12,28 @@ mod macros;
 
 #[async_trait]
 pub trait Daemon {
+    /// gets service config
     fn get_config(&self) -> &str;
+    /// sets service config
     fn set_config(&mut self, new_config: &str);
+    /// Install the service into the system
+    /// ## Example
+    /// ```rust
+    /// match daemon.install(daemon::no_args!()).await {
+    ///   Ok(()) => {
+    ///        info!("installed");
+    ///    }
+    ///    Err(err) => bail!("install error: {}", err),
+    /// };
+    /// ```
     async fn install(&self, args: Vec<&str>) -> Result<()>;
+    /// Remove the service and all corresponding files from the system
     async fn remove(&self) -> Result<()>;
+    /// Start the service
     async fn start(&self) -> Result<()>;
+    /// Stop the service
     async fn stop(&self) -> Result<()>;
+    /// Check the service status
     async fn status(&self) -> Result<bool>;
 }
 
@@ -60,7 +80,6 @@ where
 {
     match OS {
         "linux" => Ok(linux::new_daemon(name, description, dependencies).await),
-        "macos" => Ok(linux::new_daemon(name, description, dependencies).await),
         _ => bail!(DaemonError::OSNotSupported),
     }
 }
